@@ -28,14 +28,22 @@ done
 
 echo "Database is ready!"
 
+# Install/update composer dependencies
+echo "Installing/updating composer dependencies..."
+cd /var/www/html
+composer install --no-interaction --prefer-dist --optimize-autoloader
+echo "Composer dependencies installed!"
+
 # Generate app key if not set
 if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
     echo "Generating application key..."
+    cd /var/www/html
     php artisan key:generate --force || true
 fi
 
 # Run migrations
 echo "Running database migrations..."
+cd /var/www/html
 php artisan migrate --force
 
 echo "Migrations completed successfully!"

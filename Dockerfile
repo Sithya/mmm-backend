@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libpq-dev \
+    libzip-dev \
     zip \
     unzip
 
@@ -26,8 +27,8 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock* ./
 
-# Install dependencies (if composer.lock exists)
-RUN if [ -f composer.lock ]; then composer install --optimize-autoloader; else echo "composer.lock not found"; fi
+# Install dependencies (skip scripts since artisan isn't available yet)
+RUN if [ -f composer.lock ]; then composer install --optimize-autoloader --no-scripts; else composer install --optimize-autoloader --no-interaction --no-scripts; fi
 
 # Copy application files (or mount in docker-compose)
 COPY . .
