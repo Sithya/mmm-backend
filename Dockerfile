@@ -27,6 +27,9 @@ WORKDIR /var/www/html
 # Copy composer files
 COPY composer.json composer.lock* ./
 
+# Create bootstrap/cache directory before composer install
+RUN mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache
+
 # Install dependencies (skip scripts since artisan isn't available yet)
 RUN if [ -f composer.lock ]; then composer install --optimize-autoloader --no-scripts; else composer install --optimize-autoloader --no-interaction --no-scripts; fi
 
@@ -37,9 +40,17 @@ COPY . .
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Create required Laravel directories
+RUN mkdir -p /var/www/html/bootstrap/cache
+RUN mkdir -p /var/www/html/storage/framework/cache
+RUN mkdir -p /var/www/html/storage/framework/sessions
+RUN mkdir -p /var/www/html/storage/framework/views
+RUN mkdir -p /var/www/html/storage/logs
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html/storage
+RUN chmod -R 775 /var/www/html/bootstrap/cache
 
 # Expose port 9000 (PHP-FPM default)
 EXPOSE 9000

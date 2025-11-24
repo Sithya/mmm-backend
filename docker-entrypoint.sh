@@ -28,10 +28,36 @@ done
 
 echo "Database is ready!"
 
+# Create required Laravel directories if they don't exist
+echo "Creating required Laravel directories..."
+cd /var/www/html
+
+# Create directories with proper permissions immediately
+mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache
+mkdir -p storage/framework/cache && chmod -R 775 storage/framework/cache
+mkdir -p storage/framework/sessions && chmod -R 775 storage/framework/sessions
+mkdir -p storage/framework/views && chmod -R 775 storage/framework/views
+mkdir -p storage/logs && chmod -R 775 storage/logs
+
+# Set proper permissions for entire directory structure
+chown -R www-data:www-data /var/www/html
+chmod -R 755 storage
+chmod -R 775 bootstrap/cache
+chmod -R 775 storage/framework
+
+# Verify bootstrap/cache is writable
+if [ ! -w bootstrap/cache ]; then
+    echo "ERROR: bootstrap/cache is not writable!"
+    ls -la bootstrap/
+    exit 1
+fi
+
 # Install/update composer dependencies
 echo "Installing/updating composer dependencies..."
-cd /var/www/html
-composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install without scripts first to avoid package:discover errors
+composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+# Now run package discovery manually after directories are confirmed ready
+php artisan package:discover --ansi || echo "Warning: package:discover failed, continuing..."
 echo "Composer dependencies installed!"
 
 # Generate app key if not set
