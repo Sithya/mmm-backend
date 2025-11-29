@@ -33,17 +33,30 @@ echo "Creating required Laravel directories..."
 cd /var/www/html
 
 # Create directories with proper permissions immediately
-mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache
-mkdir -p storage/framework/cache && chmod -R 775 storage/framework/cache
-mkdir -p storage/framework/sessions && chmod -R 775 storage/framework/sessions
-mkdir -p storage/framework/views && chmod -R 775 storage/framework/views
-mkdir -p storage/logs && chmod -R 775 storage/logs
+mkdir -p bootstrap/cache
+mkdir -p storage/framework/cache
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+
+# Set proper ownership first
+chown -R www-data:www-data /var/www/html
 
 # Set proper permissions for entire directory structure
-chown -R www-data:www-data /var/www/html
 chmod -R 755 storage
 chmod -R 775 bootstrap/cache
 chmod -R 775 storage/framework
+chmod -R 775 storage/logs
+
+# Ensure specific subdirectories have correct permissions
+chmod -R 775 storage/framework/cache
+chmod -R 775 storage/framework/sessions
+chmod -R 775 storage/framework/views
+
+# Verify directories exist and are writable
+echo "Verifying directory permissions..."
+ls -la storage/framework/ || echo "Warning: storage/framework not found"
+ls -la storage/framework/sessions/ || echo "Warning: storage/framework/sessions not found"
 
 # Verify bootstrap/cache is writable
 if [ ! -w bootstrap/cache ]; then
