@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Function to safely chown (ignore errors)
+safe_chown() {
+    chown -R "$@" 2>/dev/null || true
+}
+
 echo "Waiting for database to be ready..."
 
 # Wait for PostgreSQL to be ready (max 60 seconds)
@@ -39,8 +44,8 @@ mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/logs
 
-# Set proper ownership first
-chown -R www-data:www-data /var/www/html
+# Set proper ownership for Laravel directories only (skip .git)
+safe_chown www-data:www-data bootstrap/cache storage vendor
 
 # Set proper permissions for entire directory structure
 chmod -R 755 storage

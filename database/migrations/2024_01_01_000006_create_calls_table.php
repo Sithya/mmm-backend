@@ -8,18 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('special_sessions', function (Blueprint $table) {
+        Schema::create('calls', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->integer('page_limit')->default(12);
+            $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
+            $table->string('title');
+            $table->string('type')->unique();
+            $table->text('content')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('special_sessions');
+        Schema::dropIfExists('calls');
     }
 };
 

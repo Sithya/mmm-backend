@@ -8,19 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('news', function (Blueprint $table) {
+        Schema::create('organization', function (Blueprint $table) {
             $table->id();
             $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
-            $table->string('title');
-            $table->text('content')->nullable();
-            $table->timestamp('published_at')->nullable();
+            $table->string('category')->nullable();
+            $table->string('name');
+            $table->string('affiliation')->nullable();
+            $table->string('photo_url')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('news');
+        Schema::dropIfExists('organization');
     }
 };
 
