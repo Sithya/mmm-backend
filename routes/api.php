@@ -2,7 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\CallController;
+use App\Http\Controllers\ConferenceController;
+use App\Http\Controllers\KeynoteController;
+use App\Http\Controllers\NewsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,5 +38,12 @@ Route::prefix('v1')->group(function () {
     // Add your API routes here
     // Example:
     // Route::apiResource('users', UserController::class);
+    Route::apiResource('pages', PageController::class);
+    Route::apiResource('organizations', OrganizationController::class);
+    Route::apiResource('authors', AuthorController::class);
+    Route::apiResource('calls', CallController::class);
+    Route::apiResource('conferences', ConferenceController::class);
+    Route::apiResource('keynotes', KeynoteController::class);
+    Route::apiResource('news', NewsController::class);
 });
 

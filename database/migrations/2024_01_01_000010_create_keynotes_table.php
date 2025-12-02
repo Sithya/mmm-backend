@@ -13,9 +13,10 @@ return new class extends Migration
             $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
             $table->string('name');
             $table->string('photo_url')->nullable();
+            $table->string('affiliation')->nullable();
             $table->string('title')->nullable();
-            $table->text('bio_html')->nullable();
-            $table->text('body_html')->nullable();
+            $table->text('bio')->nullable();
+            $table->text('content')->nullable();
             $table->timestamps();
         });
     }
