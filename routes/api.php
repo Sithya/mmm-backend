@@ -9,6 +9,10 @@ use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConferenceController;
 use App\Http\Controllers\KeynoteController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ImportantDateController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -35,9 +39,7 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Add your API routes here
-    // Example:
-    // Route::apiResource('users', UserController::class);
+    // Public routes (CMS content)
     Route::apiResource('pages', PageController::class);
     Route::apiResource('organizations', OrganizationController::class);
     Route::apiResource('authors', AuthorController::class);
@@ -45,5 +47,27 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('conferences', ConferenceController::class);
     Route::apiResource('keynotes', KeynoteController::class);
     Route::apiResource('news', NewsController::class);
+    Route::get('/important-dates', [ImportantDateController::class, 'index']);
+
+    // Authentication routes (public)
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/login', [AuthController::class, 'login']);
+
+    // Protected routes (require authentication)
+    Route::middleware('auth:sanctum')->group(function () {
+        // Auth routes
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/auth/me', [AuthController::class, 'me']);
+
+        // User management
+        Route::apiResource('users', UserController::class);
+
+        // Registration management
+        Route::apiResource('register', RegisterController::class);
+        Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
+
+        // Important dates management (admin)
+        Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+    });
 });
 
