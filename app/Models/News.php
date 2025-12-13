@@ -11,6 +11,8 @@ class News extends Model
         'page_id',
         'title',
         'content',
+        'link_text',
+        'link_url',
         'published_at',
     ];
 
