@@ -57,17 +57,26 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         // Auth routes
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::post('/auth/refresh', [AuthController::class, 'refresh']);
         Route::get('/auth/me', [AuthController::class, 'me']);
 
-        // User management
-        Route::apiResource('users', UserController::class);
+        // Self-service registration for authenticated users
+        Route::get('/me/register', [RegisterController::class, 'showForCurrentUser']);
+        Route::post('/me/register', [RegisterController::class, 'storeForCurrentUser']);
+        Route::delete('/me/register', [RegisterController::class, 'destroyForCurrentUser']);
 
-        // Registration management
-        Route::apiResource('register', RegisterController::class);
-        Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
+        // Admin-only routes
+        Route::middleware('admin')->group(function () {
+            // User management
+            Route::apiResource('users', UserController::class);
 
-        // Important dates management (admin)
-        Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+            // Registration management
+            Route::apiResource('register', RegisterController::class);
+            Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
+
+            // Important dates management (admin)
+            Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+        });
     });
 });
 
