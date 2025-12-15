@@ -50,7 +50,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/important-dates', [ImportantDateController::class, 'index']);
 
     // Authentication routes (public)
-    Route::post('/auth/register', [AuthController::class, 'register']);
+    // Users cannot self-sign up; accounts are created by admins.
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     // Protected routes (require authentication)
