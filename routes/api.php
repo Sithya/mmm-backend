@@ -66,7 +66,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/me/register', [RegisterController::class, 'destroyForCurrentUser']);
 
         // Admin-only routes
-        Route::middleware('admin')->group(function () {
+        Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
             // User management
             Route::apiResource('users', UserController::class);
 
