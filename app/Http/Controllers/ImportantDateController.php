@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateImportantDateRequest;
 use App\Http\Requests\UpdateImportantDateRequest;
+use App\Helpers\ApiResponse;
 use App\Models\ImportantDate;
 use Illuminate\Http\JsonResponse;
 
@@ -21,20 +22,7 @@ class ImportantDateController extends Controller
         $importantDates = ImportantDate::orderBy($sort, $order)
             ->paginate(min($perPage, 100));
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'items' => $importantDates->items(),
-                'pagination' => [
-                    'current_page' => $importantDates->currentPage(),
-                    'per_page' => $importantDates->perPage(),
-                    'total' => $importantDates->total(),
-                    'last_page' => $importantDates->lastPage(),
-                    'from' => $importantDates->firstItem(),
-                    'to' => $importantDates->lastItem(),
-                ],
-            ],
-        ]);
+        return ApiResponse::paginated($importantDates);
     }
 
     /**
@@ -44,10 +32,7 @@ class ImportantDateController extends Controller
     {
         $importantDate = ImportantDate::findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $importantDate,
-        ]);
+        return ApiResponse::success($importantDate);
     }
 
     /**
@@ -57,11 +42,11 @@ class ImportantDateController extends Controller
     {
         $importantDate = ImportantDate::create($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'data' => $importantDate,
-            'message' => 'Important date created successfully',
-        ], 201);
+        return ApiResponse::success(
+            $importantDate,
+            'Important date created successfully',
+            201
+        );
     }
 
     /**
@@ -72,11 +57,10 @@ class ImportantDateController extends Controller
         $importantDate = ImportantDate::findOrFail($id);
         $importantDate->update($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'data' => $importantDate->fresh(),
-            'message' => 'Important date updated successfully',
-        ]);
+        return ApiResponse::success(
+            $importantDate->fresh(),
+            'Important date updated successfully'
+        );
     }
 
     /**
@@ -87,10 +71,11 @@ class ImportantDateController extends Controller
         $importantDate = ImportantDate::findOrFail($id);
         $importantDate->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Important date deleted successfully',
-        ], 204);
+        return ApiResponse::success(
+            null,
+            'Important date deleted successfully',
+            204
+        );
     }
 }
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateRegisterRequest;
 use App\Http\Requests\UpdateRegisterRequest;
+use App\Helpers\ApiResponse;
 use App\Models\Register;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -17,20 +19,7 @@ class RegisterController extends Controller
         $perPage = request('per_page', 15);
         $registrations = Register::with('user')->paginate(min($perPage, 100));
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'items' => $registrations->items(),
-                'pagination' => [
-                    'current_page' => $registrations->currentPage(),
-                    'per_page' => $registrations->perPage(),
-                    'total' => $registrations->total(),
-                    'last_page' => $registrations->lastPage(),
-                    'from' => $registrations->firstItem(),
-                    'to' => $registrations->lastItem(),
-                ],
-            ],
-        ]);
+        return ApiResponse::paginated($registrations);
     }
 
     /**
@@ -42,10 +31,30 @@ class RegisterController extends Controller
             ->with('user')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $registrations,
-        ]);
+        return ApiResponse::success($registrations);
+    }
+
+    /**
+     * Get the current authenticated user's registration
+     */
+    public function showForCurrentUser(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $registration = Register::where('user_id', $user->id)
+            ->with('user')
+            ->first();
+
+        if (! $registration) {
+            return ApiResponse::error(
+                'RESOURCE_NOT_FOUND',
+                'No registration found for this user.',
+                null,
+                404
+            );
+        }
+
+        return ApiResponse::success($registration);
     }
 
     /**
@@ -55,10 +64,7 @@ class RegisterController extends Controller
     {
         $register = Register::with('user')->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $register,
-        ]);
+        return ApiResponse::success($register);
     }
 
     /**
@@ -70,22 +76,56 @@ class RegisterController extends Controller
         $existing = Register::where('user_id', $request->user_id)->first();
         
         if ($existing) {
-            return response()->json([
-                'success' => false,
-                'error' => [
-                    'code' => 'DUPLICATE_ENTRY',
-                    'message' => 'User already has a registration',
-                ],
-            ], 422);
+            return ApiResponse::error(
+                'DUPLICATE_ENTRY',
+                'User already has a registration',
+                null,
+                422
+            );
         }
 
         $register = Register::create($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'data' => $register->load('user'),
-            'message' => 'Registration created successfully',
-        ], 201);
+        return ApiResponse::success(
+            $register->load('user'),
+            'Registration created successfully',
+            201
+        );
+    }
+
+    /**
+     * Create a registration for the current authenticated user
+     */
+    public function storeForCurrentUser(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Check if user already has a registration
+        $existing = Register::where('user_id', $user->id)->first();
+        
+        if ($existing) {
+            return ApiResponse::error(
+                'REGISTRATION_ALREADY_EXISTS',
+                'You already have a registration.',
+                null,
+                422
+            );
+        }
+
+        $data = $request->validate([
+            'type' => 'required|string|max:255',
+        ]);
+
+        $register = Register::create([
+            'user_id' => $user->id,
+            'type' => $data['type'],
+        ]);
+
+        return ApiResponse::success(
+            $register->load('user'),
+            'Registration created successfully',
+            201
+        );
     }
 
     /**
@@ -96,11 +136,10 @@ class RegisterController extends Controller
         $register = Register::findOrFail($id);
         $register->update($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'data' => $register->fresh()->load('user'),
-            'message' => 'Registration updated successfully',
-        ]);
+        return ApiResponse::success(
+            $register->fresh()->load('user'),
+            'Registration updated successfully'
+        );
     }
 
     /**
@@ -111,10 +150,38 @@ class RegisterController extends Controller
         $register = Register::findOrFail($id);
         $register->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Registration deleted successfully',
-        ], 204);
+        return ApiResponse::success(
+            null,
+            'Registration deleted successfully',
+            204
+        );
+    }
+
+    /**
+     * Cancel the current authenticated user's registration
+     */
+    public function destroyForCurrentUser(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $register = Register::where('user_id', $user->id)->first();
+
+        if (! $register) {
+            return ApiResponse::error(
+                'RESOURCE_NOT_FOUND',
+                'No registration found for this user.',
+                null,
+                404
+            );
+        }
+
+        $register->delete();
+
+        return ApiResponse::success(
+            null,
+            'Registration cancelled successfully',
+            204
+        );
     }
 }
 

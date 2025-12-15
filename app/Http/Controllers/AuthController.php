@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Helpers\ApiResponse;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,14 +26,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+        return ApiResponse::success(
+            [
                 'user' => $user,
                 'token' => $token,
             ],
-            'message' => 'User registered successfully',
-        ], 201);
+            'User registered successfully',
+            201
+        );
     }
 
     /**
@@ -43,25 +44,23 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'error' => [
-                    'code' => 'AUTHENTICATION_FAILED',
-                    'message' => 'Invalid credentials',
-                ],
-            ], 401);
+            return ApiResponse::error(
+                'AUTHENTICATION_FAILED',
+                'Invalid credentials',
+                null,
+                401
+            );
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+        return ApiResponse::success(
+            [
                 'user' => $user,
                 'token' => $token,
             ],
-            'message' => 'Login successful',
-        ]);
+            'Login successful'
+        );
     }
 
     /**
@@ -71,10 +70,30 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully',
-        ]);
+        return ApiResponse::success(null, 'Logged out successfully');
+    }
+
+    /**
+     * Refresh the current access token
+     */
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Revoke current token and issue a new one
+        if ($token = $user?->currentAccessToken()) {
+            $token->delete();
+        }
+
+        $newToken = $user->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::success(
+            [
+                'user' => $user,
+                'token' => $newToken,
+            ],
+            'Token refreshed successfully'
+        );
     }
 
     /**
@@ -82,10 +101,7 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => $request->user(),
-        ]);
+        return ApiResponse::success($request->user());
     }
 }
 
