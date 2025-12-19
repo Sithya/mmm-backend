@@ -16,7 +16,7 @@ class PageController extends Controller
     // Get a page by id
     public function show($id) {
         $page = Page::findOrFail($id);
-        $page->load('calls', 'news', 'keynotes', 'organization', 'conference', 'authors');
+        $page->load('calls', 'news', 'keynotes', 'organizations', 'conference', 'authors');
         return response()->json($page);
     }
 

@@ -67,4 +67,22 @@ class OrganizationController extends Controller
         $organization->delete();
         return response()->json(null, 204);
     }
+
+    // Update category name
+    public function updateCategory(Request $request) {
+        $validated = $request->validate(
+            ['old_category' => 'required|string|max:255',
+            'new_category' => 'required|string|max:255']
+        );
+        Organization::where('category', $validated['old_category'])->update(['category'=>$validated['new_categgory']]);
+        $updated = Organization::where('category', $validated['new_category'])->get();
+        return response()->json($updated);
+    }
+
+    //Delete category name and its members
+    public function deleteCategory(Request $request) {
+        $validated = $request->validate(['category'=>'required|string|max:255']);
+        Organization::where('category', $validated['category'])->delete();
+        return response()->json(null, 204);
+    }
 }

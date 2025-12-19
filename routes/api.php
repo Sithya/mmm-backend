@@ -41,6 +41,8 @@ Route::prefix('v1')->group(function () {
 
     // Public routes (CMS content)
     Route::apiResource('pages', PageController::class);
+    Route::patch('organizations/category', [OrganizationController::class, 'updateCategory']);
+    Route::delete('organizations/category', [OrganizationController::class, 'deleteCategory']);
     Route::apiResource('organizations', OrganizationController::class);
     Route::apiResource('authors', AuthorController::class);
     Route::apiResource('calls', CallController::class);
