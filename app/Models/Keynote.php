@@ -9,6 +9,8 @@ class Keynote extends Model
 {
     protected $fillable = [
         'page_id',
+        'date',
+        'time',
         'name',
         'photo_url',
         'affiliation',

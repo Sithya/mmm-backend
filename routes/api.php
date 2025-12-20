@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Public routes (CMS content)
+    Route::get('pages/slug/{slug}', [PageController::class, 'showBySlug']);
     Route::apiResource('pages', PageController::class);
     Route::patch('organizations/category', [OrganizationController::class, 'updateCategory']);
     Route::delete('organizations/category', [OrganizationController::class, 'deleteCategory']);

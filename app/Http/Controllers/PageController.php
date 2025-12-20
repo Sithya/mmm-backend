@@ -39,4 +39,10 @@ class PageController extends Controller
         $page->delete();
         return response()->json(null, 204);
     }
+
+    // Get a page by slug
+    public function showBySlug($slug) {
+        $page = Page::where('slug', $slug)->firstOrFail();
+        return response()->json($page);
+    }
 }
