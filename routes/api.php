@@ -13,6 +13,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ImportantDateController;
+use App\Http\Controllers\FaqController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -51,6 +52,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('keynotes', KeynoteController::class);
     Route::apiResource('news', NewsController::class);
     Route::get('/important-dates', [ImportantDateController::class, 'index']);
+    Route::get('/faqs', [FaqController::class, 'index']);
 
     // Authentication routes (public)
     // Users cannot self-sign up; accounts are created by admins.
@@ -79,6 +81,9 @@ Route::prefix('v1')->group(function () {
 
             // Important dates management (admin)
             Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+
+            // FAQ management (admin)
+            Route::apiResource('faqs', FaqController::class)->except(['index']);
         });
     });
 });
