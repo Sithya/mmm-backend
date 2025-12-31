@@ -10,7 +10,14 @@ class NewsController extends Controller
     // Get all news items
     public function index()
     {
-        $news = News::all();
+        $query = News::query();
+        
+        // Filter by page_id if provided
+        if (request()->has('page_id')) {
+            $query->where('page_id', request('page_id'));
+        }
+        
+        $news = $query->get();
         return response()->json($news);
     }
 
@@ -36,6 +43,8 @@ class NewsController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'published_at' => 'nullable|date',
+            'link_text' => 'nullable|string',
+            'link_url' => 'nullable|string'
         ]);
         $newsItem = News::create($validated);
         return response()->json($newsItem, 201);
@@ -48,6 +57,8 @@ class NewsController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'content' => 'nullable|string',
             'published_at' => 'nullable|date',
+            'link_text' => 'nullable|string',
+            'link_url' => 'nullable|string'
         ]);
         $newsItem = News::findOrFail($id);
         $newsItem->update($validated);
