@@ -11,10 +11,12 @@ class Conference extends Model
     
     protected $fillable = [
         'page_id',
-        'name',
-        'location',
-        'start_date',
-        'end_date',
+        'content',
+        'json',
+    ];
+
+    protected $casts = [
+        'json' => 'array',
     ];
 
     public function page()

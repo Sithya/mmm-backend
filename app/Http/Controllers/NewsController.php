@@ -2,74 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateNewsRequest;
+use App\Http\Requests\UpdateNewsRequest;
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\HandlesApiQueries;
 use App\Models\News;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
-    // Get all news items
-    public function index()
+    use HandlesApiQueries;
+
+    /**
+     * Get all news items
+     */
+    public function index(Request $request): JsonResponse
     {
         $query = News::query();
-        
-        // Filter by page_id if provided
-        if (request()->has('page_id')) {
-            $query->where('page_id', request('page_id'));
+        $query = $this->applyQueryFilters($query, $request, [
+            'default_sort' => 'published_at',
+            'default_order' => 'desc',
+            'filter_by_page_id' => true,
+        ]);
+
+        $result = $this->getPaginatedOrAll($query, $request);
+
+        if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+            return ApiResponse::paginated($result);
         }
-        
-        $news = $query->get();
-        return response()->json($news);
+
+        return ApiResponse::success($result);
     }
 
-    // Get news items by Page ID
-    public function indexByPage($pageId)
+    /**
+     * Get a news item by ID
+     */
+    public function show(News $news): JsonResponse
     {
-        $news = News::where('page_id', $pageId)->get();
-        return response()->json($news);
+        return ApiResponse::success($news);
     }
 
-    // Get a news item by ID
-    public function show($id)
+    /**
+     * Create a news item
+     */
+    public function store(CreateNewsRequest $request): JsonResponse
     {
-        $newsItem = News::findOrFail($id);
-        return response()->json($newsItem);
+        $newsItem = News::create($request->validated());
+        return ApiResponse::success($newsItem, 'News item created successfully', 201);
     }
 
-    // Create a news item
-    public function store(Request $request)
+    /**
+     * Update a news item
+     */
+    public function update(UpdateNewsRequest $request, News $news): JsonResponse
     {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'title' => 'required|string|max:255',
-            'content' => 'nullable|string',
-            'published_at' => 'nullable|date',
-            'link_text' => 'nullable|string',
-            'link_url' => 'nullable|string'
-        ]);
-        $newsItem = News::create($validated);
-        return response()->json($newsItem, 201);
+        $news->update($request->validated());
+        return ApiResponse::success($news->fresh(), 'News item updated successfully');
     }
 
-    // Update a news item
-    public function update(Request $request, $id)
+    /**
+     * Delete a news item
+     */
+    public function destroy(News $news): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'content' => 'nullable|string',
-            'published_at' => 'nullable|date',
-            'link_text' => 'nullable|string',
-            'link_url' => 'nullable|string'
-        ]);
-        $newsItem = News::findOrFail($id);
-        $newsItem->update($validated);
-        return response()->json($newsItem);
-    }
-
-    // Delete a news item
-    public function destroy($id)
-    {
-        $newsItem = News::findOrFail($id);
-        $newsItem->delete();
-        return response()->json(null, 204);
+        $news->delete();
+        return ApiResponse::success(null, 'News item deleted successfully', 204);
     }
 }

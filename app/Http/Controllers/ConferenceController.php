@@ -2,61 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateConferenceRequest;
+use App\Http\Requests\UpdateConferenceRequest;
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\HandlesApiQueries;
 use App\Models\Conference;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ConferenceController extends Controller
 {
-    // Get all conferences
-    public function index()
-    {
-        $conferences = Conference::all();
-        return response()->json($conferences);
-    }
+    use HandlesApiQueries;
 
-    // Get conferences by Page ID
-    public function indexByPage($pageId)
+    /**
+     * Get all conferences
+     */
+    public function index(Request $request): JsonResponse
     {
-        $conferences = Conference::where('page_id', $pageId)->get();
-        return response()->json($conferences);
-    }
-
-    // Get a conference by ID
-    public function show($id)
-    {
-        $conference = Conference::findOrFail($id);
-        return response()->json($conference);
-    }
-
-    // Create a new conference
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'content' => 'nullable|string',
-            'json' => 'nullable|json',
+        $query = Conference::query();
+        $query = $this->applyQueryFilters($query, $request, [
+            'default_sort' => 'created_at',
+            'default_order' => 'desc',
+            'filter_by_page_id' => true,
         ]);
-        $conference = Conference::create($validated);
-        return response()->json($conference, 201);
+
+        $result = $this->getPaginatedOrAll($query, $request);
+
+        if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+            return ApiResponse::paginated($result);
+        }
+
+        return ApiResponse::success($result);
     }
 
-    // Update an existing conference
-    public function update(Request $request, $id)
+    /**
+     * Get a conference by ID
+     */
+    public function show(Conference $conference): JsonResponse
     {
-        $validated = $request->validate([
-            'content' => 'nullable|string',
-            'json' => 'nullable|json',
-        ]);
-        $conference = Conference::findOrFail($id);
-        $conference->update($validated);
-        return response()->json($conference);
+        return ApiResponse::success($conference);
     }
 
-    // Delete a conference
-    public function destroy($id)
+    /**
+     * Create a new conference
+     */
+    public function store(CreateConferenceRequest $request): JsonResponse
     {
-        $conference = Conference::findOrFail($id);
+        $conference = Conference::create($request->validated());
+        return ApiResponse::success($conference, 'Conference created successfully', 201);
+    }
+
+    /**
+     * Update an existing conference
+     */
+    public function update(UpdateConferenceRequest $request, Conference $conference): JsonResponse
+    {
+        $conference->update($request->validated());
+        return ApiResponse::success($conference->fresh(), 'Conference updated successfully');
+    }
+
+    /**
+     * Delete a conference
+     */
+    public function destroy(Conference $conference): JsonResponse
+    {
         $conference->delete();
-        return response()->json(null, 204);
+        return ApiResponse::success(null, 'Conference deleted successfully', 204);
     }
 }

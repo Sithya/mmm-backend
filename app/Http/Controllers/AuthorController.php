@@ -2,59 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateAuthorRequest;
+use App\Http\Requests\UpdateAuthorRequest;
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\HandlesApiQueries;
 use App\Models\Author;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthorController extends Controller
 {
-    // Get all authors
-    public function index()
-    {
-        $authors = Author::all();
-        return response()->json($authors);
-    }
+    use HandlesApiQueries;
 
-    // Get authors by Page ID
-    public function indexByPage($pageId)
+    /**
+     * Get all authors
+     */
+    public function index(Request $request): JsonResponse
     {
-        $authors = Author::where('page_id', $pageId)->get();
-        return response()->json($authors);
-    }
-
-    // Get an author by ID
-    public function show($id)
-    {
-        $author = Author::findOrFail($id);
-        return response()->json($author);
-    }
-
-    // Create a new author
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'content' => 'nullable|string',
+        $query = Author::query();
+        $query = $this->applyQueryFilters($query, $request, [
+            'default_sort' => 'created_at',
+            'default_order' => 'desc',
+            'filter_by_page_id' => true,
         ]);
-        $author = Author::create($validated);
-        return response()->json($author, 201);
+
+        $result = $this->getPaginatedOrAll($query, $request);
+
+        if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+            return ApiResponse::paginated($result);
+        }
+
+        return ApiResponse::success($result);
     }
 
-    // Update an existing author
-    public function update(Request $request, $id)
+    /**
+     * Get an author by ID
+     */
+    public function show(Author $author): JsonResponse
     {
-        $validated = $request->validate([
-            'content' => 'nullable|string',
-        ]);
-        $author = Author::findOrFail($id);
-        $author->update($validated);
-        return response()->json($author);
+        return ApiResponse::success($author);
     }
 
-    // Delete an author
-    public function destroy($id)
+    /**
+     * Create a new author
+     */
+    public function store(CreateAuthorRequest $request): JsonResponse
     {
-        $author = Author::findOrFail($id);
+        $author = Author::create($request->validated());
+        return ApiResponse::success($author, 'Author created successfully', 201);
+    }
+
+    /**
+     * Update an existing author
+     */
+    public function update(UpdateAuthorRequest $request, Author $author): JsonResponse
+    {
+        $author->update($request->validated());
+        return ApiResponse::success($author->fresh(), 'Author updated successfully');
+    }
+
+    /**
+     * Delete an author
+     */
+    public function destroy(Author $author): JsonResponse
+    {
         $author->delete();
-        return response()->json(null, 204);
+        return ApiResponse::success(null, 'Author deleted successfully', 204);
     }
 }

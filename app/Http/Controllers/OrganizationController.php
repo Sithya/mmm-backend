@@ -2,87 +2,97 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateOrganizationRequest;
+use App\Http\Requests\UpdateOrganizationRequest;
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\HandlesApiQueries;
 use App\Models\Organization;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
 {
-    // Get all organizations
-    public function index()
-    {
-        $organizations = Organization::all();
-        return response()->json($organizations);
-    }
+    use HandlesApiQueries;
 
-    // Get organizations by Page ID
-    public function indexByPage($pageId)
+    /**
+     * Get all organizations
+     */
+    public function index(Request $request): JsonResponse
     {
-        $organizations = Organization::where('page_id', $pageId)->get();
-        return response()->json($organizations);
-    }
-
-    // Get an organization by ID
-    public function show($id)
-    {
-        $organization = Organization::findOrFail($id);
-        return response()->json($organization);
-    }
-
-    // Create a new organization
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'name' => 'required|string|max:255',
-            'category' => 'nullable|string|max:255',
-            'photo_url' => 'nullable|string|max:255',
-            'affiliation' => 'nullable|string|max:255',
+        $query = Organization::query();
+        $query = $this->applyQueryFilters($query, $request, [
+            'default_sort' => 'created_at',
+            'default_order' => 'desc',
+            'filter_by_page_id' => true,
         ]);
 
-        $organization = Organization::create($validated);
+        $result = $this->getPaginatedOrAll($query, $request);
 
-        return response()->json($organization, 201);
+        if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+            return ApiResponse::paginated($result);
+        }
+
+        return ApiResponse::success($result);
     }
 
-    // Update an existing organization
-    public function update(Request $request, $id)
+    /**
+     * Get an organization by ID
+     */
+    public function show(Organization $organization): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'nullable|string|max:255',
-            'photo_url' => 'nullable|string|max:255',
-            'affiliation' => 'nullable|string|max:255',
-        ]);
+        return ApiResponse::success($organization);
+    }
 
-        $organization = Organization::findOrFail($id);
-        $organization->update($validated);
+    /**
+     * Create a new organization
+     */
+    public function store(CreateOrganizationRequest $request): JsonResponse
+    {
+        $organization = Organization::create($request->validated());
+        return ApiResponse::success($organization, 'Organization created successfully', 201);
+    }
 
-        return response()->json($organization);
+    /**
+     * Update an existing organization
+     */
+    public function update(UpdateOrganizationRequest $request, Organization $organization): JsonResponse
+    {
+        $organization->update($request->validated());
+        return ApiResponse::success($organization->fresh(), 'Organization updated successfully');
     }
     
-    // Delete an organization
-    public function destroy($id)
+    /**
+     * Delete an organization
+     */
+    public function destroy(Organization $organization): JsonResponse
     {
-        $organization = Organization::findOrFail($id);
         $organization->delete();
-        return response()->json(null, 204);
+        return ApiResponse::success(null, 'Organization deleted successfully', 204);
     }
 
     // Update category name
-    public function updateCategory(Request $request) {
-        $validated = $request->validate(
-            ['old_category' => 'required|string|max:255',
-            'new_category' => 'required|string|max:255']
-        );
-        Organization::where('category', $validated['old_category'])->update(['category'=>$validated['new_categgory']]);
+    public function updateCategory(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'old_category' => 'required|string|max:255',
+            'new_category' => 'required|string|max:255'
+        ]);
+        
+        Organization::where('category', $validated['old_category'])
+            ->update(['category' => $validated['new_category']]);
+            
         $updated = Organization::where('category', $validated['new_category'])->get();
-        return response()->json($updated);
+        return ApiResponse::success($updated, 'Category updated successfully');
     }
 
-    //Delete category name and its members
-    public function deleteCategory(Request $request) {
-        $validated = $request->validate(['category'=>'required|string|max:255']);
+    // Delete category name and its members
+    public function deleteCategory(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'category' => 'required|string|max:255'
+        ]);
+        
         Organization::where('category', $validated['category'])->delete();
-        return response()->json(null, 204);
+        return ApiResponse::success(null, 'Category and its members deleted successfully', 204);
     }
 }

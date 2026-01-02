@@ -2,63 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateCallRequest;
+use App\Http\Requests\UpdateCallRequest;
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\HandlesApiQueries;
 use App\Models\Call;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CallController extends Controller
 {
-    // Get all calls
-    public function index()
-    {
-        $calls = Call::all();
-        return response()->json($calls);
-    }
+    use HandlesApiQueries;
 
-    // Get calls by Page ID
-    public function indexByPage($pageId)
+    /**
+     * Get all calls
+     */
+    public function index(Request $request): JsonResponse
     {
-        $calls = Call::where('page_id', $pageId)->get();
-        return response()->json($calls);
-    }
-
-    // Get a call by ID
-    public function show($id)
-    {
-        $call = Call::findOrFail($id);
-        return response()->json($call);
-    }
-
-    // Create a new call
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'title' => 'required|string|max:255',
-            'type' => 'nullable|string|unique:calls,type',
-            'content' => 'nullable|string',
+        $query = Call::query();
+        $query = $this->applyQueryFilters($query, $request, [
+            'default_sort' => 'created_at',
+            'default_order' => 'desc',
+            'filter_by_page_id' => true,
         ]);
-        $call = Call::create($validated);
-        return response()->json($call, 201);
+
+        $result = $this->getPaginatedOrAll($query, $request);
+
+        if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+            return ApiResponse::paginated($result);
+        }
+
+        return ApiResponse::success($result);
     }
 
-    // Update an existing call
-    public function update(Request $request, $id)
+    /**
+     * Get a call by ID
+     */
+    public function show(Call $call): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'type' => 'nullable|string|unique:calls,type,' . $id,
-            'content' => 'nullable|string',
-        ]);
-        $call = Call::findOrFail($id);
-        $call->update($validated);
-        return response()->json($call);
+        return ApiResponse::success($call);
     }
 
-    // Delete a call
-    public function destroy($id)
+    /**
+     * Create a new call
+     */
+    public function store(CreateCallRequest $request): JsonResponse
     {
-        $call = Call::findOrFail($id);
+        $call = Call::create($request->validated());
+        return ApiResponse::success($call, 'Call created successfully', 201);
+    }
+
+    /**
+     * Update an existing call
+     */
+    public function update(UpdateCallRequest $request, Call $call): JsonResponse
+    {
+        $call->update($request->validated());
+        return ApiResponse::success($call->fresh(), 'Call updated successfully');
+    }
+
+    /**
+     * Delete a call
+     */
+    public function destroy(Call $call): JsonResponse
+    {
         $call->delete();
-        return response()->json(null, 204);
+        return ApiResponse::success(null, 'Call deleted successfully', 204);
     }
 }
