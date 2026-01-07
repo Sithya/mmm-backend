@@ -14,7 +14,8 @@ class UpdatePageRequest extends FormRequest
     public function rules(): array
     {
         // apiResource uses 'page' as the route parameter name
-        $pageId = $this->route('page');
+        $page = $this->route('page');
+        $pageId = $page instanceof \App\Models\Page ? $page->id : $page;
         
         return [
             'slug' => 'sometimes|required|string|max:255|unique:pages,slug,' . $pageId,
