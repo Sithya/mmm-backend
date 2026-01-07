@@ -51,7 +51,8 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('conferences', ConferenceController::class);
     Route::apiResource('keynotes', KeynoteController::class);
     Route::apiResource('news', NewsController::class);
-    Route::get('/important-dates', [ImportantDateController::class, 'index']);
+    // Route::get('/important-dates', [ImportantDateController::class, 'index']);
+            Route::apiResource('important-dates', ImportantDateController::class);
     Route::get('/faqs', [FaqController::class, 'index']);
 
     // Authentication routes (public)
@@ -80,7 +81,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
 
             // Important dates management (admin)
-            Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+            // Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
 
             // FAQ management (admin)
             Route::apiResource('faqs', FaqController::class)->except(['index']);
