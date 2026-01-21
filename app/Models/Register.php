@@ -3,24 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Register extends Model
 {
-    protected $table = 'register';
+    protected $table = 'registers';
 
     protected $fillable = [
-        'user_id',
-        'type',
+        'registration_type',
+        'first_name',
+        'last_name',
+        'email',
+        'affiliation',
+        'country',
+        'dietary_restrictions',
+        'agreed_to_terms',
     ];
 
     protected $casts = [
-        'type' => 'string',
+        'agreed_to_terms' => 'boolean',
     ];
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+
 }
 

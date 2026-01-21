@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
     Route::get('pages/slug/{slug}', [PageController::class, 'showBySlug']);
     Route::apiResource('pages', PageController::class);
     Route::patch('organizations/category', [OrganizationController::class, 'updateCategory']);
-    Route::delete('organizations/category', [OrganizationController::class, 'deleteCategory']);
+    Route::post('organizations/category', [OrganizationController::class, 'deleteCategory']);
     Route::apiResource('organizations', OrganizationController::class);
     Route::apiResource('authors', AuthorController::class);
     Route::apiResource('calls', CallController::class);
@@ -53,8 +53,10 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('news', NewsController::class);
     // Route::get('/important-dates', [ImportantDateController::class, 'index']);
             Route::apiResource('important-dates', ImportantDateController::class);
-    Route::get('/faqs', [FaqController::class, 'index']);
+    Route::get('/faqs', action: [FaqController::class, 'index']);
 
+    Route::post('/registrations', [RegisterController::class, 'store']);
+    Route::apiResource('faqs', FaqController::class)->except(['index']);
     // Authentication routes (public)
     // Users cannot self-sign up; accounts are created by admins.
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -67,9 +69,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
 
         // Self-service registration for authenticated users
-        Route::get('/me/register', [RegisterController::class, 'showForCurrentUser']);
-        Route::post('/me/register', [RegisterController::class, 'storeForCurrentUser']);
-        Route::delete('/me/register', [RegisterController::class, 'destroyForCurrentUser']);
+        // Route::get('/me/register', [RegisterController::class, 'showForCurrentUser']);
+        // Route::post('/me/register', [RegisterController::class, 'storeForCurrentUser']);
+        // Route::delete('/me/register', [RegisterController::class, 'destroyForCurrentUser']);
 
         // Admin-only routes
         Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
@@ -77,14 +79,14 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('users', UserController::class);
 
             // Registration management
-            Route::apiResource('register', RegisterController::class);
-            Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
+            // Route::apiResource('register', RegisterController::class);
+            // Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
 
             // Important dates management (admin)
             // Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
 
             // FAQ management (admin)
-            Route::apiResource('faqs', FaqController::class)->except(['index']);
+            // Route::apiResource('faqs', FaqController::class)->except(['index']);
         });
     });
 });

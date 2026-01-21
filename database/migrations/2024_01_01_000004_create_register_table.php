@@ -6,19 +6,42 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('register', function (Blueprint $table) {
+        Schema::create('registers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('type', ['student', 'standard', 'early_bird', 'group'])->nullable();
+
+            // Registration info
+            $table->string('registration_type'); // student | standard | early_bird
+
+            // Personal info
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('email')->index();
+
+            // Optional info
+            $table->string('affiliation')->nullable();
+            $table->string('country');
+
+            // Optional dietary requirements
+            $table->text('dietary_restrictions')->nullable();
+
+            // Terms agreement
+            $table->boolean('agreed_to_terms');
+
+            // Timestamps
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('register');
+        Schema::dropIfExists('registers');
     }
 };
-
