@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('organization', function (Blueprint $table) {
             $table->id();
             $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
-            $table->string('category')->nullable();
+            $table->string('category');
             $table->string('name');
             $table->string('affiliation')->nullable();
             $table->string('photo_url')->nullable();

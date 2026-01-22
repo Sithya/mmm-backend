@@ -16,7 +16,7 @@ class CreateOrganizationRequest extends FormRequest
         return [
             'page_id' => 'required|exists:pages,id',
             'name' => 'required|string|max:255',
-            'category' => 'nullable|string|max:255',
+            'category' => 'required|string|max:255',
             'photo_url' => 'nullable|string|max:255',
             'affiliation' => 'nullable|string|max:255',
         ];
