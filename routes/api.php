@@ -40,53 +40,124 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Public routes (CMS content)
+    // ========================================
+    // PUBLIC ROUTES (Read-only for all users)
+    // ========================================
+    
+    // Pages
     Route::get('pages/slug/{slug}', [PageController::class, 'showBySlug']);
-    Route::apiResource('pages', PageController::class);
-    Route::patch('organizations/category', [OrganizationController::class, 'updateCategory']);
-    Route::post('organizations/category', [OrganizationController::class, 'deleteCategory']);
-    Route::apiResource('organizations', OrganizationController::class);
-    Route::apiResource('authors', AuthorController::class);
-    Route::apiResource('calls', CallController::class);
-    Route::apiResource('conferences', ConferenceController::class);
-    Route::apiResource('keynotes', KeynoteController::class);
-    Route::apiResource('news', NewsController::class);
-    // Route::get('/important-dates', [ImportantDateController::class, 'index']);
-            Route::apiResource('important-dates', ImportantDateController::class);
-    Route::get('/faqs', action: [FaqController::class, 'index']);
+    Route::get('pages', [PageController::class, 'index']);
+    Route::get('pages/{page}', [PageController::class, 'show']);
+    
+    // Organizations
+    Route::get('organizations', [OrganizationController::class, 'index']);
+    Route::get('organizations/{organization}', [OrganizationController::class, 'show']);
+    
+    // Authors
+    Route::get('authors', [AuthorController::class, 'index']);
+    Route::get('authors/{author}', [AuthorController::class, 'show']);
+    
+    // Calls
+    Route::get('calls', [CallController::class, 'index']);
+    Route::get('calls/{call}', [CallController::class, 'show']);
+    
+    // Conferences
+    Route::get('conferences', [ConferenceController::class, 'index']);
+    Route::get('conferences/{conference}', [ConferenceController::class, 'show']);
+    
+    // Keynotes
+    Route::get('keynotes', [KeynoteController::class, 'index']);
+    Route::get('keynotes/{keynote}', [KeynoteController::class, 'show']);
+    
+    // News
+    Route::get('news', [NewsController::class, 'index']);
+    Route::get('news/{news}', [NewsController::class, 'show']);
+    
+    // Important Dates
+    Route::get('important-dates', [ImportantDateController::class, 'index']);
+    Route::get('important-dates/{important_date}', [ImportantDateController::class, 'show']);
+    
+    // FAQs
+    Route::get('faqs', [FaqController::class, 'index']);
+    Route::get('faqs/{faq}', [FaqController::class, 'show']);
 
+    // Registrations (public can submit)
     Route::post('/registrations', [RegisterController::class, 'store']);
-    Route::apiResource('faqs', FaqController::class)->except(['index']);
+
     // Authentication routes (public)
-    // Users cannot self-sign up; accounts are created by admins.
     Route::post('/auth/login', [AuthController::class, 'login']);
 
-    // Protected routes (require authentication)
+    // ========================================
+    // PROTECTED ROUTES (Require authentication)
+    // ========================================
     Route::middleware('auth:sanctum')->group(function () {
         // Auth routes
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/auth/refresh', [AuthController::class, 'refresh']);
         Route::get('/auth/me', [AuthController::class, 'me']);
 
-        // Self-service registration for authenticated users
-        // Route::get('/me/register', [RegisterController::class, 'showForCurrentUser']);
-        // Route::post('/me/register', [RegisterController::class, 'storeForCurrentUser']);
-        // Route::delete('/me/register', [RegisterController::class, 'destroyForCurrentUser']);
-
-        // Admin-only routes
+        // ========================================
+        // ADMIN-ONLY ROUTES (CRUD operations)
+        // ========================================
         Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
             // User management
             Route::apiResource('users', UserController::class);
 
-            // Registration management
-            // Route::apiResource('register', RegisterController::class);
-            // Route::get('/users/{userId}/register', [RegisterController::class, 'indexByUser']);
+            // Pages (create, update, delete)
+            Route::post('pages', [PageController::class, 'store']);
+            Route::put('pages/{page}', [PageController::class, 'update']);
+            Route::patch('pages/{page}', [PageController::class, 'update']);
+            Route::delete('pages/{page}', [PageController::class, 'destroy']);
 
-            // Important dates management (admin)
-            // Route::apiResource('important-dates', ImportantDateController::class)->except(['index']);
+            // Organizations (create, update, delete)
+            Route::post('organizations', [OrganizationController::class, 'store']);
+            Route::put('organizations/{organization}', [OrganizationController::class, 'update']);
+            Route::patch('organizations/{organization}', [OrganizationController::class, 'update']);
+            Route::delete('organizations/{organization}', [OrganizationController::class, 'destroy']);
+            Route::patch('organizations/category', [OrganizationController::class, 'updateCategory']);
+            Route::post('organizations/category', [OrganizationController::class, 'deleteCategory']);
 
-            // FAQ management (admin)
-            // Route::apiResource('faqs', FaqController::class)->except(['index']);
+            // Authors (create, update, delete)
+            Route::post('authors', [AuthorController::class, 'store']);
+            Route::put('authors/{author}', [AuthorController::class, 'update']);
+            Route::patch('authors/{author}', [AuthorController::class, 'update']);
+            Route::delete('authors/{author}', [AuthorController::class, 'destroy']);
+
+            // Calls (create, update, delete)
+            Route::post('calls', [CallController::class, 'store']);
+            Route::put('calls/{call}', [CallController::class, 'update']);
+            Route::patch('calls/{call}', [CallController::class, 'update']);
+            Route::delete('calls/{call}', [CallController::class, 'destroy']);
+
+            // Conferences (create, update, delete)
+            Route::post('conferences', [ConferenceController::class, 'store']);
+            Route::put('conferences/{conference}', [ConferenceController::class, 'update']);
+            Route::patch('conferences/{conference}', [ConferenceController::class, 'update']);
+            Route::delete('conferences/{conference}', [ConferenceController::class, 'destroy']);
+
+            // Keynotes (create, update, delete)
+            Route::post('keynotes', [KeynoteController::class, 'store']);
+            Route::put('keynotes/{keynote}', [KeynoteController::class, 'update']);
+            Route::patch('keynotes/{keynote}', [KeynoteController::class, 'update']);
+            Route::delete('keynotes/{keynote}', [KeynoteController::class, 'destroy']);
+
+            // News (create, update, delete)
+            Route::post('news', [NewsController::class, 'store']);
+            Route::put('news/{news}', [NewsController::class, 'update']);
+            Route::patch('news/{news}', [NewsController::class, 'update']);
+            Route::delete('news/{news}', [NewsController::class, 'destroy']);
+
+            // Important Dates (create, update, delete)
+            Route::post('important-dates', [ImportantDateController::class, 'store']);
+            Route::put('important-dates/{important_date}', [ImportantDateController::class, 'update']);
+            Route::patch('important-dates/{important_date}', [ImportantDateController::class, 'update']);
+            Route::delete('important-dates/{important_date}', [ImportantDateController::class, 'destroy']);
+
+            // FAQs (create, update, delete)
+            Route::post('faqs', [FaqController::class, 'store']);
+            Route::put('faqs/{faq}', [FaqController::class, 'update']);
+            Route::patch('faqs/{faq}', [FaqController::class, 'update']);
+            Route::delete('faqs/{faq}', [FaqController::class, 'destroy']);
         });
     });
 });
