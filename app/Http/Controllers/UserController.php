@@ -27,7 +27,7 @@ class UserController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $user = User::with('register')->findOrFail($id);
+        $user = User::findOrFail($id);
 
         return ApiResponse::success($user);
     }

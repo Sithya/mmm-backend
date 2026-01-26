@@ -41,3 +41,6 @@ composer.phar
 # OS
 .DS_Store
 Thumbs.db
+
+# API testing
+/apidog/
