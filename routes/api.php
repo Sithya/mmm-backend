@@ -158,6 +158,11 @@ Route::prefix('v1')->group(function () {
             Route::put('faqs/{faq}', [FaqController::class, 'update']);
             Route::patch('faqs/{faq}', [FaqController::class, 'update']);
             Route::delete('faqs/{faq}', [FaqController::class, 'destroy']);
+
+            // Registrations (view, delete - admin only)
+            Route::get('registrations', [RegisterController::class, 'index']);
+            Route::get('registrations/{registration}', [RegisterController::class, 'show']);
+            Route::delete('registrations/{registration}', [RegisterController::class, 'destroy']);
         });
     });
 });
